@@ -78,6 +78,12 @@ class _HomeState extends State<Home> {
     "price": "\$ 10.99",
     "image": "assets/images/quiz3.png",
   },
+    {
+    "name": "Plant",
+    "price": "\$ 10.99",
+    "image": "assets/images/quiz3.png",
+  },
+
 ];
 
 
