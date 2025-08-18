@@ -1,4 +1,5 @@
 import 'package:demo/bottom_bar.dart';
+import 'package:demo/card_details.dart';
 import 'package:demo/login_screen/login_screen.dart';
 import 'package:demo/notification.dart';
 import 'package:flutter/material.dart';
@@ -214,54 +215,71 @@ SizedBox(
       
       children: List.generate(mainPlants.length, (index) {
         final plant = mainPlants[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8.0),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                blurRadius: 4.0,
-                offset: const Offset(0, 2), 
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                child: Image.asset(
-                  plant["image"],
-                  fit: BoxFit.cover,
-                  height: 120,
-                  width: double.infinity,
+
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CardDetails(
+                  name: plant["name"],
+                  price: plant["price"],
+                  image: plant["image"],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  plant["name"],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+            );
+            // Handle tap
+          },  
+          child: Container(
+            
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  blurRadius: 4.0,
+                  offset: const Offset(0, 2), 
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  child: Image.asset(
+                    plant["image"],
+                    fit: BoxFit.cover,
+                    height: 120,
+                    width: double.infinity,
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 4.0,
-                ),
-                child: Text(
-                  plant["price"],
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.green,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    plant["name"],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 4.0,
+                  ),
+                  child: Text(
+                    plant["price"],
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.green,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       }),
