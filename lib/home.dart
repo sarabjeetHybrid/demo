@@ -1,7 +1,10 @@
 import 'package:demo/bottom_bar.dart';
 import 'package:demo/card_details.dart';
 import 'package:demo/login_screen/login_screen.dart';
+import 'package:demo/main_dash_board_screen.dart';
 import 'package:demo/notification.dart';
+import 'package:demo/static_variable.dart';
+import 'package:demo/stored_value.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -56,7 +59,7 @@ class _HomeState extends State<Home> {
   },
   {
     "name": "Bamboo Palm",
-    "price": "\$ 10.20",
+    "price": "\$ 1000.20",
     "image": "assets/images/quiz3.png",
   },
   {
@@ -144,6 +147,7 @@ final List<Map<String, dynamic>> plants2 = [
       mainPlants = plants1; // Default to the first set of plants
     }
     super.initState();
+    print(StaticVariable.itemList);
   }
 
   @override
@@ -151,7 +155,7 @@ final List<Map<String, dynamic>> plants2 = [
    
     return Scaffold(
       key: scaffoldKey,
-
+      
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -217,8 +221,10 @@ SizedBox(
         final plant = mainPlants[index];
 
         return InkWell(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            String status = 
+
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => CardDetails(
@@ -229,6 +235,12 @@ SizedBox(
               ),
             );
             // Handle tap
+            if (status == 'true') {
+                 print("added ${Cart.itemList}");
+                 Navigator.push(context, MaterialPageRoute(
+                   builder: (context) => MainDashBoardScreen(),
+                 ));
+            }
           },  
           child: Container(
             

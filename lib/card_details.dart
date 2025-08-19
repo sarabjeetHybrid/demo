@@ -1,3 +1,4 @@
+import 'package:demo/cart.dart';
 import 'package:demo/static_variable.dart';
 import 'package:demo/stored_value.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,10 @@ class InputCounter extends StatefulWidget {
 class _InputCounterState extends State<InputCounter> {
   late int _value;
   int storedValueQty = 0;
+
+  int get cartItemCount {
+  return Cart.itemList.fold(0, (sum, item) => sum + item.qty);
+}
   @override
   void initState() {
     super.initState();
@@ -80,12 +85,23 @@ class _InputCounterState extends State<InputCounter> {
 
 class _CardDetailsState extends State<CardDetails> {
   int storedValueQty = 1;
+@override
+  void initState() {
+    // TODO: implement initState
+    //StaticVariable.itemList.clear(); // Clear the cart items at the start
+    super.initState();
+      Cart.itemList.addAll(StaticVariable.itemList);
 
+  }
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
+       leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, 'false'),
+        ),
         title: Text(widget.name),
       ),
       body: Column(
@@ -130,15 +146,14 @@ class _CardDetailsState extends State<CardDetails> {
                 qty: storedValueQty, // Assuming quantity is 1 for simplicity
                 price: double.parse(widget.price.replaceAll('\$', '')),
               );
-              addItem(storedValue, context);
-              // If you want to debug the cart, print Cart.items or similar
-              // Navigate back or show a confirmation message
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${widget.name} added to cart!'),
-                ),
-              );
-              Navigator.pop(context);
+
+              Cart.addItem(storedValue, context);
+
+            setState(() {
+            
+            });
+              // Navigator.pop(context, 'true');
+            
             },
             child: Text('Add to Cart'),
           ),
@@ -146,47 +161,41 @@ class _CardDetailsState extends State<CardDetails> {
        
         ],
       ),
+
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    floatingActionButton: Cart.itemList.isNotEmpty ? Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          onPressed: () {
+            // Navigate to cart or checkout page
+            debugPrint("Checkout pressed with ${Cart.itemList.length} items");
+            Navigator.push(context, MaterialPageRoute(builder: (context) => CartScreen()));
+          },
+
+
+          child: Text(
+            Cart.itemList.length.toString() == "0" || Cart.itemList.length == 1
+                ? "${Cart.itemList.length} Item • Checkout"
+                : "${Cart.itemList.length} Items • Checkout",
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ):null,
     );
   }
 
-   void addItem(StoredValue item, BuildContext context) {
-    
-    if (StaticVariable.itemList.any((existingItem) => existingItem.name == item.name) ) {
-      // If the item already exists, you might want to update the quantity instead
-      final index = StaticVariable.itemList.indexWhere((existingItem) => existingItem.name == item.name);
-      if (StaticVariable.itemList[index].qty +item.qty> 10) {
-        // Prevent adding more than 10 of the same item
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Limit Reached"),
-              content: Text("Cannot add more than 10 of the same item"),
-              actions: <Widget>[
-                TextButton(
-                  child: Text("OK"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-        return;
-      }
-      StaticVariable.itemList[index] = StoredValue(
-        key: item.key,
-        name: item.name,
-        image: item.image,
-        qty: StaticVariable.itemList[index].qty + item.qty, // Update quantity
-        price: item.price,
-      );
-      return;
-    }
-    StaticVariable.itemList.add(item);
-     
-  }
+
+
+
+   
   
   // static void removeItem(String key) {
   //   StaticVariable.itemList.removeWhere((item) => item.key == key);

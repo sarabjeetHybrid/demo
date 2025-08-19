@@ -1,7 +1,9 @@
 import 'package:demo/bottom_bar.dart';
+import 'package:demo/cart.dart';
 import 'package:demo/home.dart';
 import 'package:demo/login_screen/login_screen.dart';
 import 'package:demo/notification.dart';
+import 'package:demo/stored_value.dart';
 import 'package:demo/user_info.dart';
 import 'package:flutter/material.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
@@ -18,7 +20,7 @@ class _HomeState extends State<MainDashBoardScreen> {
   String label = "home";
   var selected = 0;
   PageController controller = PageController(initialPage: 0);
- 
+  String stri = (Cart.itemList.length + 1).toString();
  @override
   void initState() {
 
@@ -27,6 +29,7 @@ class _HomeState extends State<MainDashBoardScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    stri = (Cart.itemList.length).toString();
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
@@ -36,6 +39,33 @@ class _HomeState extends State<MainDashBoardScreen> {
         ),
         backgroundColor: const Color(0xFFF2EDD1),
         actions: [
+
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_bag_rounded, color: Colors.black),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => CartScreen()),
+                  );
+                },
+              ),
+              if (Cart.itemList.isNotEmpty)
+                Positioned(
+                  right: 0,
+                  child: CircleAvatar(
+                    radius: 10,
+                    backgroundColor: Colors.red,
+                    child: Text(
+                     stri,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        
           IconButton(
             icon: const Icon(Icons.notifications, color: Colors.black),
             onPressed: () {
@@ -54,6 +84,7 @@ class _HomeState extends State<MainDashBoardScreen> {
               );
             },
           ),
+          
         ],
       ),
 
@@ -130,6 +161,7 @@ class _HomeState extends State<MainDashBoardScreen> {
       //   title: Text(AppLocalizations.of(context)!.profile),
       //   unSelectedColor: Colors.white70,
       // ),
+
       BottomBarItem(
         icon: const Icon(Icons.notifications),
         selectedColor: Colors.white70,
