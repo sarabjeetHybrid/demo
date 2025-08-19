@@ -1,4 +1,4 @@
-import 'package:demo/stored_value.dart';
+import 'package:demo/models/stored_value.dart';
 
 /// Abstract base class for cart operations that can be undone/redone
 abstract class CartCommand {
@@ -7,29 +7,36 @@ abstract class CartCommand {
   String get description;
 }
 
+/// Interface for cart operations - to be implemented by the cart
+abstract class CartOperations {
+  static List<StoredValue> get itemList;
+  static set itemList(List<StoredValue> value);
+}
+
 /// Command to add an item to the cart
 class AddItemCommand extends CartCommand {
   final StoredValue item;
+  final List<StoredValue> cartItems;
   bool _wasExecuted = false;
   int? _existingItemIndex;
   int? _previousQty;
 
-  AddItemCommand(this.item);
+  AddItemCommand(this.item, this.cartItems);
 
   @override
   void execute() {
-    _existingItemIndex = Cart.itemList.indexWhere(
+    _existingItemIndex = cartItems.indexWhere(
       (existingItem) => existingItem.name == item.name,
     );
 
     if (_existingItemIndex != -1) {
       // Item already exists, update quantity
-      _previousQty = Cart.itemList[_existingItemIndex!].qty;
-      Cart.itemList[_existingItemIndex!].qty += item.qty;
+      _previousQty = cartItems[_existingItemIndex!].qty;
+      cartItems[_existingItemIndex!].qty += item.qty;
     } else {
       // New item, add to cart
-      Cart.itemList.add(item);
-      _existingItemIndex = Cart.itemList.length - 1;
+      cartItems.add(item);
+      _existingItemIndex = cartItems.length - 1;
     }
     _wasExecuted = true;
   }
@@ -40,10 +47,10 @@ class AddItemCommand extends CartCommand {
 
     if (_previousQty != null) {
       // Restore previous quantity
-      Cart.itemList[_existingItemIndex!].qty = _previousQty!;
+      cartItems[_existingItemIndex!].qty = _previousQty!;
     } else {
       // Remove the item that was added
-      Cart.itemList.removeAt(_existingItemIndex!);
+      cartItems.removeAt(_existingItemIndex!);
     }
     _wasExecuted = false;
   }
@@ -55,21 +62,22 @@ class AddItemCommand extends CartCommand {
 /// Command to remove an item from the cart
 class RemoveItemCommand extends CartCommand {
   final int itemIndex;
+  final List<StoredValue> cartItems;
   StoredValue? _removedItem;
 
-  RemoveItemCommand(this.itemIndex);
+  RemoveItemCommand(this.itemIndex, this.cartItems);
 
   @override
   void execute() {
-    if (itemIndex >= 0 && itemIndex < Cart.itemList.length) {
-      _removedItem = Cart.itemList.removeAt(itemIndex);
+    if (itemIndex >= 0 && itemIndex < cartItems.length) {
+      _removedItem = cartItems.removeAt(itemIndex);
     }
   }
 
   @override
   void undo() {
     if (_removedItem != null) {
-      Cart.itemList.insert(itemIndex, _removedItem!);
+      cartItems.insert(itemIndex, _removedItem!);
     }
   }
 
@@ -80,15 +88,16 @@ class RemoveItemCommand extends CartCommand {
 /// Command to increment item quantity
 class IncrementQtyCommand extends CartCommand {
   final String itemName;
+  final List<StoredValue> cartItems;
   bool _wasExecuted = false;
 
-  IncrementQtyCommand(this.itemName);
+  IncrementQtyCommand(this.itemName, this.cartItems);
 
   @override
   void execute() {
-    final index = Cart.itemList.indexWhere((item) => item.name == itemName);
-    if (index != -1 && Cart.itemList[index].qty < 10) {
-      Cart.itemList[index].qty++;
+    final index = cartItems.indexWhere((item) => item.name == itemName);
+    if (index != -1 && cartItems[index].qty < 10) {
+      cartItems[index].qty++;
       _wasExecuted = true;
     }
   }
@@ -97,12 +106,12 @@ class IncrementQtyCommand extends CartCommand {
   void undo() {
     if (!_wasExecuted) return;
     
-    final index = Cart.itemList.indexWhere((item) => item.name == itemName);
+    final index = cartItems.indexWhere((item) => item.name == itemName);
     if (index != -1) {
-      if (Cart.itemList[index].qty > 1) {
-        Cart.itemList[index].qty--;
+      if (cartItems[index].qty > 1) {
+        cartItems[index].qty--;
       } else {
-        Cart.itemList.removeAt(index);
+        cartItems.removeAt(index);
       }
     }
     _wasExecuted = false;
@@ -115,22 +124,23 @@ class IncrementQtyCommand extends CartCommand {
 /// Command to decrement item quantity
 class DecrementQtyCommand extends CartCommand {
   final String itemName;
+  final List<StoredValue> cartItems;
   bool _wasExecuted = false;
   bool _wasRemoved = false;
   StoredValue? _removedItem;
   int? _removedIndex;
 
-  DecrementQtyCommand(this.itemName);
+  DecrementQtyCommand(this.itemName, this.cartItems);
 
   @override
   void execute() {
-    final index = Cart.itemList.indexWhere((item) => item.name == itemName);
+    final index = cartItems.indexWhere((item) => item.name == itemName);
     if (index != -1) {
-      if (Cart.itemList[index].qty > 1) {
-        Cart.itemList[index].qty--;
+      if (cartItems[index].qty > 1) {
+        cartItems[index].qty--;
         _wasExecuted = true;
       } else {
-        _removedItem = Cart.itemList.removeAt(index);
+        _removedItem = cartItems.removeAt(index);
         _removedIndex = index;
         _wasRemoved = true;
         _wasExecuted = true;
@@ -143,11 +153,11 @@ class DecrementQtyCommand extends CartCommand {
     if (!_wasExecuted) return;
 
     if (_wasRemoved && _removedItem != null && _removedIndex != null) {
-      Cart.itemList.insert(_removedIndex!, _removedItem!);
+      cartItems.insert(_removedIndex!, _removedItem!);
     } else {
-      final index = Cart.itemList.indexWhere((item) => item.name == itemName);
+      final index = cartItems.indexWhere((item) => item.name == itemName);
       if (index != -1) {
-        Cart.itemList[index].qty++;
+        cartItems[index].qty++;
       }
     }
     _wasExecuted = false;
@@ -159,18 +169,21 @@ class DecrementQtyCommand extends CartCommand {
 
 /// Command to clear the entire cart
 class ClearCartCommand extends CartCommand {
+  final List<StoredValue> cartItems;
   List<StoredValue> _previousItems = [];
+
+  ClearCartCommand(this.cartItems);
 
   @override
   void execute() {
-    _previousItems = List.from(Cart.itemList);
-    Cart.itemList.clear();
+    _previousItems = List.from(cartItems);
+    cartItems.clear();
   }
 
   @override
   void undo() {
-    Cart.itemList.clear();
-    Cart.itemList.addAll(_previousItems);
+    cartItems.clear();
+    cartItems.addAll(_previousItems);
   }
 
   @override

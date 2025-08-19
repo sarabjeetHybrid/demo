@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:demo/models/stored_value.dart';
 import 'package:demo/stored_value.dart';
 import 'package:demo/cart_command.dart';
 import 'package:demo/cart_history.dart';
@@ -21,7 +22,7 @@ void main() {
       );
 
       // Add item using command
-      final command = AddItemCommand(item);
+      final command = AddItemCommand(item, Cart.itemList);
       CartHistory().executeCommand(command);
 
       expect(Cart.itemList.length, 1);
@@ -45,7 +46,7 @@ void main() {
         price: 5.0,
       );
 
-      final command = AddItemCommand(item);
+      final command = AddItemCommand(item, Cart.itemList);
       CartHistory().executeCommand(command);
 
       // Undo then redo
@@ -67,11 +68,11 @@ void main() {
       );
 
       // Add item
-      CartHistory().executeCommand(AddItemCommand(item));
+      CartHistory().executeCommand(AddItemCommand(item, Cart.itemList));
       expect(Cart.itemList[0].qty, 1);
 
       // Increment quantity
-      CartHistory().executeCommand(IncrementQtyCommand('Test Item'));
+      CartHistory().executeCommand(IncrementQtyCommand('Test Item', Cart.itemList));
       expect(Cart.itemList[0].qty, 2);
 
       // Undo increment
@@ -83,7 +84,7 @@ void main() {
       expect(Cart.itemList[0].qty, 2);
 
       // Decrement quantity
-      CartHistory().executeCommand(DecrementQtyCommand('Test Item'));
+      CartHistory().executeCommand(DecrementQtyCommand('Test Item', Cart.itemList));
       expect(Cart.itemList[0].qty, 1);
 
       // Undo decrement
@@ -101,11 +102,11 @@ void main() {
       );
 
       // Add item
-      CartHistory().executeCommand(AddItemCommand(item));
+      CartHistory().executeCommand(AddItemCommand(item, Cart.itemList));
       expect(Cart.itemList.length, 1);
 
       // Remove item
-      CartHistory().executeCommand(RemoveItemCommand(0));
+      CartHistory().executeCommand(RemoveItemCommand(0, Cart.itemList));
       expect(Cart.itemList.length, 0);
 
       // Undo remove
@@ -126,12 +127,12 @@ void main() {
 
       // Add items
       for (var item in items) {
-        CartHistory().executeCommand(AddItemCommand(item));
+        CartHistory().executeCommand(AddItemCommand(item, Cart.itemList));
       }
       expect(Cart.itemList.length, 2);
 
       // Clear cart
-      CartHistory().executeCommand(ClearCartCommand());
+      CartHistory().executeCommand(ClearCartCommand(Cart.itemList));
       expect(Cart.itemList.length, 0);
 
       // Undo clear
@@ -155,7 +156,7 @@ void main() {
       );
 
       // Add item and undo
-      CartHistory().executeCommand(AddItemCommand(item));
+      CartHistory().executeCommand(AddItemCommand(item, Cart.itemList));
       Cart.undo();
       expect(Cart.canRedo, true);
 
@@ -167,7 +168,7 @@ void main() {
         qty: 1,
         price: 8.0,
       );
-      CartHistory().executeCommand(AddItemCommand(newItem));
+      CartHistory().executeCommand(AddItemCommand(newItem, Cart.itemList));
       expect(Cart.canRedo, false);
     });
 
@@ -180,7 +181,7 @@ void main() {
         price: 5.0,
       );
 
-      CartHistory().executeCommand(AddItemCommand(item));
+      CartHistory().executeCommand(AddItemCommand(item, Cart.itemList));
       expect(Cart.undoDescription, 'Add Test Item (2)');
 
       Cart.undo();
@@ -197,12 +198,12 @@ void main() {
       );
 
       // Add item with qty 1
-      CartHistory().executeCommand(AddItemCommand(item));
+      CartHistory().executeCommand(AddItemCommand(item, Cart.itemList));
       expect(Cart.itemList.length, 1);
       expect(Cart.itemList[0].qty, 1);
 
       // Decrement should remove the item
-      CartHistory().executeCommand(DecrementQtyCommand('Test Item'));
+      CartHistory().executeCommand(DecrementQtyCommand('Test Item', Cart.itemList));
       expect(Cart.itemList.length, 0);
 
       // Undo should restore the item

@@ -5,26 +5,13 @@ import 'package:demo/cart_history.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class StoredValue {
-  String key;
-  String name;
-  String image;
-  int qty;
-  double price;
-
-  StoredValue({
-    required this.key,
-    required this.name,
-    required this.image,
-    required this.qty,
-    required this.price,
-  });
-
-  @override
-  String toString() {
-    return 'StoredValue{key: $key, name: $name, image: $image, qty: $qty, price: $price}';
-  }
-}
+import 'package:demo/main.dart';
+import 'package:demo/modal_helper.dart';
+import 'package:demo/models/stored_value.dart';
+import 'package:demo/cart_command.dart';
+import 'package:demo/cart_history.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Cart {
   static List<StoredValue> itemList = [];
@@ -61,7 +48,7 @@ class Cart {
     }
 
     // Execute command through history
-    final command = AddItemCommand(item);
+    final command = AddItemCommand(item, itemList);
     _history.executeCommand(command);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -74,7 +61,7 @@ class Cart {
   /// Remove item by index using command pattern
   static void removeItemAt(int index) {
     if (index >= 0 && index < itemList.length) {
-      final command = RemoveItemCommand(index);
+      final command = RemoveItemCommand(index, itemList);
       _history.executeCommand(command);
     }
   }
@@ -89,19 +76,19 @@ class Cart {
 
   /// Increment quantity using command pattern
   static void incrementQty(String itemName) {
-    final command = IncrementQtyCommand(itemName);
+    final command = IncrementQtyCommand(itemName, itemList);
     _history.executeCommand(command);
   }
 
   /// Decrement quantity using command pattern
   static void decrementQty(String itemName) {
-    final command = DecrementQtyCommand(itemName);
+    final command = DecrementQtyCommand(itemName, itemList);
     _history.executeCommand(command);
   }
 
   /// Clear cart using command pattern
   static void clearCart() {
-    final command = ClearCartCommand();
+    final command = ClearCartCommand(itemList);
     _history.executeCommand(command);
   }
 
