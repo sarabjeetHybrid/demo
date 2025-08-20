@@ -109,6 +109,8 @@ class _CardDetailsState extends State<CardDetails> {
          
           SizedBox(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(widget.image),
                 Text(widget.name),
@@ -120,7 +122,9 @@ class _CardDetailsState extends State<CardDetails> {
                     fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: Colors.grey[700],
-                  ),       ),
+                  ),     
+                    textAlign: TextAlign.center,
+                    ),
                 const SizedBox(height: 20),
                 InputCounter(
                   initialValue: 1,
