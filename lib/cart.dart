@@ -20,6 +20,34 @@ class _CartState extends State<CartScreen> {
             MaterialPageRoute(builder: (context) => MainDashBoardScreen()),
           ),
         ),
+        actions: [
+          // Undo button
+          IconButton(
+            icon: const Icon(Icons.undo),
+            onPressed: Cart.canUndo ? () {
+              setState(() {
+                Cart.undo();
+              });
+              if (Cart.undoDescription != null) {
+                snackBar(context, "Undone: ${Cart.undoDescription}");
+              }
+            } : null,
+            tooltip: Cart.canUndo ? "Undo: ${Cart.undoDescription}" : "No actions to undo",
+          ),
+          // Redo button
+          IconButton(
+            icon: const Icon(Icons.redo),
+            onPressed: Cart.canRedo ? () {
+              setState(() {
+                Cart.redo();
+              });
+              if (Cart.redoDescription != null) {
+                snackBar(context, "Redone: ${Cart.redoDescription}");
+              }
+            } : null,
+            tooltip: Cart.canRedo ? "Redo: ${Cart.redoDescription}" : "No actions to redo",
+          ),
+        ],
       ),
       body: Cart.itemList.isEmpty
           ? const Center(child: Text("Your cart is empty"))
@@ -41,7 +69,11 @@ class _CartState extends State<CartScreen> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.remove),
-                              onPressed: () => decrementQty(item.name),
+                              onPressed: () {
+                                setState(() {
+                                  Cart.decrementQty(item.name);
+                                });
+                              },
                             ),
                             Text(
                               '${item.qty}',
@@ -49,13 +81,25 @@ class _CartState extends State<CartScreen> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.add),
-                              onPressed: () => incrementQty(context, item.name),
+                              onPressed: () {
+                                final currentItem = Cart.itemList[index];
+                                if (currentItem.qty >= 10) {
+                                  snackBar(
+                                    context,
+                                    "You can only add 10 items of the same type to the cart",
+                                  );
+                                } else {
+                                  setState(() {
+                                    Cart.incrementQty(item.name);
+                                  });
+                                }
+                              },
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
                                 setState(() {
-                                  Cart.itemList.removeAt(index);
+                                  Cart.removeItemAt(index);
                                 });
                               },
                             ),
@@ -132,35 +176,6 @@ class _CartState extends State<CartScreen> {
               ),
             ),
     );
-  }
-
-  void incrementQty(BuildContext context, String name) {
-    final index = Cart.itemList.indexWhere((item) => item.name == name);
-    if (index != -1) {
-      if (Cart.itemList[index].qty >= 10) {
-        snackBar(
-          context,
-          "You can only add 10 items of the same type to the cart",
-        );
-      } else {
-        setState(() {
-          Cart.itemList[index].qty++;
-        });
-      }
-    }
-  }
-
-  void decrementQty(String name) {
-    final index = Cart.itemList.indexWhere((item) => item.name == name);
-    if (index != -1) {
-      setState(() {
-        if (Cart.itemList[index].qty > 1) {
-          Cart.itemList[index].qty--;
-        } else {
-          Cart.itemList.removeAt(index);
-        }
-      });
-    }
   }
 
   void snackBar(BuildContext context, String message) {
